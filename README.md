@@ -24,19 +24,13 @@ A full-stack jewellery shop web application with appointment booking, product br
 
 ### Installation
 
-1. Clone the repository
-   ```bash
-   git clone https://github.com/Myo-Gyi/HninYmo_WebAssignment.git
-   cd HninYmo_WebAssignment
-   ```
-
-2. Install dependencies
+1. Install dependencies
    ```bash
    cd backend && npm install
    cd ../frontend && npm install
    ```
 
-3. Configure environment variables  
+2. Configure environment variables  
    Create `backend/.env` with your database credentials:
    ```
    DB_HOST=localhost
@@ -46,12 +40,12 @@ A full-stack jewellery shop web application with appointment booking, product br
    JWT_SECRET=your_secret
    ```
 
-4. Seed the database
+3. Seed the database
    ```bash
    cd backend && npm run seed
    ```
 
-5. Run the application
+4. Run the application
    ```bash
    # From the root directory
    npm run dev:server   # Start backend
