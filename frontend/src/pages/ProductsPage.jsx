@@ -5,7 +5,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/CartContext';
@@ -57,7 +57,8 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const fetchIdRef = useRef(0);
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [categoryId, setCategoryId] = useState(searchParams.get('category_id') || '');
@@ -77,13 +78,19 @@ export default function ProductsPage() {
     params.set('page', page);
     setSearchParams(params);
 
-    setLoading(true);
+    const fetchId = ++fetchIdRef.current;
     api.get(`/products?${params.toString()}`)
-      .then((r) => { setProducts(r.data.products); setTotal(r.data.total); setPages(r.data.pages); })
-      .finally(() => setLoading(false));
-  }, [search, categoryId, priceRange, page]);
+      .then((r) => {
+        if (fetchId === fetchIdRef.current) {
+          setProducts(r.data.products);
+          setTotal(r.data.total);
+          setPages(r.data.pages);
+        }
+      })
+      .finally(() => { if (fetchId === fetchIdRef.current) setLoading(false); });
+  }, [search, categoryId, priceRange, page, setSearchParams]);
 
-  const handleSearchSubmit = (e) => { e.preventDefault(); setPage(1); };
+  const handleSearchSubmit = (e) => { e.preventDefault(); setLoading(true); setPage(1); };
 
   return (
     <Box className="max-w-7xl mx-auto px-4 py-8">
@@ -105,13 +112,13 @@ export default function ProductsPage() {
             <Box component="form" onSubmit={handleSearchSubmit} sx={{ mb: 3 }}>
               <TextField
                 size="small" fullWidth label="Search" value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setLoading(true); setSearch(e.target.value); }}
               />
             </Box>
 
             <FormControl fullWidth size="small" sx={{ mb: 3 }}>
               <InputLabel>Category</InputLabel>
-              <Select value={categoryId} label="Category" onChange={(e) => { setCategoryId(e.target.value); setPage(1); }}>
+              <Select value={categoryId} label="Category" onChange={(e) => { setLoading(true); setCategoryId(e.target.value); setPage(1); }}>
                 <MenuItem value="">All</MenuItem>
                 {categories.map((c) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
               </Select>
@@ -120,7 +127,7 @@ export default function ProductsPage() {
             <Typography gutterBottom>Price Range: {priceRange[0] >= 1000 ? `${(priceRange[0] / 1000).toLocaleString()}K` : priceRange[0].toLocaleString()} – {priceRange[1] >= 1000 ? `${(priceRange[1] / 1000).toLocaleString()}K` : priceRange[1].toLocaleString()} MMK</Typography>
             <Slider
               value={priceRange} min={0} max={10000000} step={100000}
-              onChange={(_, v) => { setPriceRange(v); setPage(1); }}
+              onChange={(_, v) => { setLoading(true); setPriceRange(v); setPage(1); }}
               valueLabelDisplay="auto"
               sx={{ color: '#d4af37' }}
             />
@@ -169,7 +176,7 @@ export default function ProductsPage() {
               </Grid>
               {pages > 1 && (
                 <Box className="flex justify-center mt-6">
-                  <Pagination count={pages} page={page} onChange={(_, v) => setPage(v)} color="primary" />
+                  <Pagination count={pages} page={page} onChange={(_, v) => { setLoading(true); setPage(v); }} color="primary" />
                 </Box>
               )}
             </>
