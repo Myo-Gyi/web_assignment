@@ -1,0 +1,34 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const { sequelize } = require('./models');
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/products', require('./routes/products'));
+app.use('/api/orders', require('./routes/orders'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/appointments', require('./routes/appointments'));
+
+// Health check
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// 404
+app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
+
+const PORT = process.env.PORT || 5000;
+
+sequelize.sync({ alter: true }).then(() => {
+  console.log('Database connected and synced');
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}).catch((err) => {
+  console.error('Failed to connect to database:', err.message);
+  process.exit(1);
+});

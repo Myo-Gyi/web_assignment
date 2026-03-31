@@ -1,0 +1,11 @@
+{
+  "name": "hninymo-jewellery-shop",
+  "version": "1.0.0",
+  "description": "Jewellery shop full-stack app",
+  "scripts": {
+    "dev:client": "cd frontend && npm run dev",
+    "dev:server": "cd backend && npm run dev",
+    "seed": "cd backend && npm run seed"
+  },
+  "private": true
+}
